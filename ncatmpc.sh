@@ -1,12 +1,14 @@
-#!/bin/sh -eu
+#!/bin/sh
 
 # 変数
 host=$(echo "${MPD_HOST}" | grep . || echo "localhost")
 port=$(echo "${MPD_PORT}" | grep . || echo "6600")
+arg1=$(echo "${1}" | grep . || echo "status")
+arg2=$(echo "${2}" | grep . || echo "")
 
-echo "${1}" "${2}" | 
+echo "${arg1}" "${arg2}" | 
 
-grep -F -e "playlist" -e "listall" -e "status" -e "play" |
+grep -F -e "playlist" -e "listall" -e "status" -e "play" -e "lsplaylists" |
 
 awk '{
 
@@ -20,6 +22,8 @@ awk '{
 
 	else{
 
+		sub("lsplaylists" , "listplaylists")
+
 		print $0
 
 		print "status"
@@ -30,5 +34,5 @@ awk '{
 
 }' |
 
-nc "${host}" "${port}"
+nc "${host}" "${port}" | grep -F -v "OK"
 
