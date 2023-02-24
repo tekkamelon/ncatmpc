@@ -10,7 +10,7 @@ arg2=$(echo "${2}" | grep . || echo "")
 echo "${arg1}" "${arg2}" | 
 
 # 対応する引数があるかを確認
-grep -F -e "playlist" -e "listall" -e "status" -e "play" -e "lsplaylists" |
+grep -F -e "playlist" -e "listall" -e "status" -e "play" -e "toggle" |
 
 awk '{
 	
@@ -26,8 +26,11 @@ awk '{
 
 	else{
 
-		# 偽の場合は"lsplaylists"を"listplaylists"に置換
-		sub("lsplaylists" , "listplaylists")
+		# 偽の場合は"lsplaylists"若しくは"lsplaylists"を"listplaylists"に置換
+		sub("lsplaylists|lsplaylist" , "listplaylists")
+
+		# "toggle"を"pause"に置換
+		sub("toggle" , "pause")
 
 		print $0
 
@@ -39,6 +42,12 @@ awk '{
 
 }' |
 
-# ncに文字列を渡し,"OK"以外を出力
-nc "${host}" "${port}" | grep -F -v "OK"
+# ncに文字列を渡す
+nc "${host}" "${port}" |
+
+# "OK","Last-Modified","directory: "を含む文字列を除外
+grep -F -v -e "OK" -e "Last-Modified" -e "directory: " |
+
+# "file: "を削除
+sed -e "s/file: //" -e "s/playlist: //"
 
