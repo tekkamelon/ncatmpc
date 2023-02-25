@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # 変数
-host=$(echo "${MPD_HOST}" | grep . || echo "localhost")
-port=$(echo "${MPD_PORT}" | grep . || echo "6600")
-arg1=$(echo "${1}" | grep . || echo "status")
-arg2=$(echo "${2}" | grep . || echo "")
+test -n "${MPD_HOST}" || export MPD_HOST="localhost"
+test -n "${MPD_PORT}" || export MPD_PORT="6600"
+test -n "${1}" || 1="status"
+test -n "${2}" || 2=""
 
 # 引数を出力
-echo "${arg1}" "${arg2}" | 
+echo "${1}" "${2}" |
 
 # 対応する引数があるかを確認
 grep -F -e "playlist" -e "listall" -e "status" -e "play" -e "toggle" |
@@ -32,8 +32,10 @@ awk '{
 		# "toggle"を"pause"に置換
 		sub("toggle" , "pause")
 
+		# 受け取った文字列を出力
 		print $0
 
+		# ステータスの表示
 		print "status"
 
 		print "close"
@@ -43,7 +45,7 @@ awk '{
 }' |
 
 # ncに文字列を渡す
-nc "${host}" "${port}" |
+nc "${MPD_HOST}" "${MPD_PORT}" |
 
 # "OK","Last-Modified","directory: "を含む文字列を除外
 grep -F -v -e "OK" -e "Last-Modified" -e "directory: " |
