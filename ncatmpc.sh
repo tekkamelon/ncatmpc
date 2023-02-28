@@ -6,15 +6,48 @@
 test -n "${MPD_HOST}" || export MPD_HOST="localhost"
 test -n "${MPD_PORT}" || export MPD_PORT="6600"
 
-# 1番目の引数があれば真,無ければ偽
-if [ -n "${1}" ] ; then 
-	
-	# 真の場合は1番目の引数を変数に代入
+# 1番目の引数がなければ真,あれば偽
+if [ -z "${1}" ] ; then
+
+	# 真の場合は"cat"を代入
+	command="cat -"
+
+	# "status"を代入
+	arg1="status"
+
+# 偽の場合は引数が"listall","status","play","lsplaylists"の"lsplaylist"のいずれかであれば真,そうでない場合は偽
+elif [ "${1}" = "listall" ] || [ "${1}" = "status" ] || [ "${1}" = "play" ] || [ "${1}" = "lsplaylists" ] || [ "${1}" = "lsplaylist" ] ; then 
+
+	# 真の場合は"cat"を代入
+	command="cat -"
+
+	# 1番目の引数を代入
+	arg1="${1}"
+
+# 偽の場合は引数が"toggle"であれば真,そうでない場合は偽
+elif [ "${1}" = "toggle" ] ; then
+
+	# 真の場合は"cat"を代入
+	command="cat -"
+
+	# pauseを代入
+	arg1="pause"
+
+# 偽の場合は引数が"playlist"であれば真,そうでない場合は偽
+elif [ "${1}" = "playlist" ] ; then
+
+	# 真の場合は"cut"を代入
+	command="cut -d: -f2-"
+
+	# 1番目の引数を代入
 	arg1="${1}"
 
 else
 
-	# 偽の場合は"status"を代入
+	# 偽の場合は"cat"を代入
+	command="cat -"
+
+	# "status"を代入
 	arg1="status"
 
 fi
@@ -32,25 +65,10 @@ else
 
 fi
 
-# 1番目の引数が"playlist"であれば真,それ以外は偽
-if [ "${1}"="playlist" ] ; then
-
-	# 真の場合は"cut"を代入
-	command="cut -d: -f2-"
-
-else
-
-	# 偽の場合は"cat"を代入
-	command="cat -"
-
-fi
 # ======変数の設定の終了======
 
 # 引数を出力
 echo "${arg1}" "${arg2}" |
-
-# 対応する引数があるかを確認
-grep -F -e "playlist" -e "listall" -e "status" -e "play" -e "toggle" |
 
 awk '{
 	
@@ -69,9 +87,6 @@ awk '{
 		# 偽の場合は"lsplaylists"若しくは"lsplaylists"を"listplaylists"に置換
 		sub("lsplaylists|lsplaylist" , "listplaylists")
 
-		# "toggle"を"pause"に置換
-		sub("toggle" , "pause")
-
 		# 受け取った文字列を出力
 		print $0
 
@@ -87,7 +102,7 @@ awk '{
 # ncに文字列を渡す
 nc "${MPD_HOST}" "${MPD_PORT}" |
 
-# "OK","Last-Modified","directory: "を含む行を除外
+# 行頭に"OK","Last-Modified","directory: "を含む行を除外
 grep -v -e "^OK" -e "^Last-Modified" -e "^directory: " |
 
 # "command"を実行
