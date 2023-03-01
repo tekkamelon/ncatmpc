@@ -12,68 +12,62 @@ test -n "${MPD_PORT}" || export MPD_PORT="6600"
 case "${1}" in
 
 	# 引数がない場合
-	"" ) command="cat - " ; arg1="status" ;;
+	"" ) 
+		
+		command="cat - " ; arg1="status"
 
-	# 引数が"status","listall","play","lsplaylist","lsplaylists"の場合
-	"status" | "listall" | "play" | "lsplaylist" | "lsplaylists" ) command="cat - " ; arg1="${1}" ;;
+	;;
 
-	# 引数が"toggle"の場合
-	"toggle" ) command="cat - " ; arg1="pause" ;;
+	# "status","listall","play"の場合
+	"status" | "listall" | "play" ) 
 
-	# 引数が"playlist"の場合
+		command="cat - " ; arg1="${1}"
+
+	;;
+	
+	# "lsplaylist","lsplaylists"の場合
+	"lsplaylist" | "lsplaylists" )
+
+		command="cat - " ; arg1="listplaylists"
+
+	;;	
+
+	# "toggle"の場合
+	"toggle" )
+
+		command="cat - " ; arg1="pause"
+
+	;;
+
+	# "playlist"の場合
 	"playlist" ) command="cut -d: -f2-" ; arg1="${1}" ;;
 
 	# 上記のどれにも一致しない場合
-	* ) command="cat - " ; arg1="status" ;;
+	* ) 
+
+		command="cat - " ; arg1="status"
+
+	;;
 
 esac
 
 # 2番目の引数があれば真,無ければ偽
 if [ -n "${2}" ] ; then 
 	
-	# 真の場合は2番目の引数を変数に代入
-	arg2="${2}"
+	# 真の場合は2番目の引数と"status",改行で挟んだ"close"を代入
+	arg2="${2}\nstatus\nclose\n"
 
 else
 	
-	# 偽の場合は空文字を代入
-	arg2=""
+	# 偽の場合は改行で挟んだ"close"を代入
+	arg2="\nclose\n"
 
 fi
 
 # ======変数の設定の終了======
 
 # 引数を出力
-echo "${arg1}" "${arg2}" |
-
-awk '{
-	
-	# "status"があれば真,無ければ偽
-	if($1 == "status"){
-		
-		# 真の場合は受け取った文字列と"close"を出力
-		print $0
-	
-		print "close"
-	
-	}
-
-	else{
-
-		# 偽の場合は"lsplaylists"若しくは"lsplaylists"を"listplaylists"に置換
-		sub("lsplaylists|lsplaylist" , "listplaylists")
-
-		# 受け取った文字列を出力
-		print $0
-
-		# ステータスの表示
-		print "status"
-
-		print "close"
-
-	}
-
-}' |
+printf "${arg1} ${arg2}" |
 
 # ncに文字列を渡す
 nc "${MPD_HOST}" "${MPD_PORT}" |
