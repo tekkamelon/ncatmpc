@@ -2,55 +2,31 @@
 
 # ======変数の設定======
 
+export LANG=C
+
 # ホスト名とポート番号の環境変数があるかを確認,無ければ"localhost","6600"を代入
 test -n "${MPD_HOST}" || export MPD_HOST="localhost"
 test -n "${MPD_PORT}" || export MPD_PORT="6600"
 
-# 1番目の引数がなければ真,あれば偽
-if [ -z "${1}" ] ; then
+# 条件分岐,1番目の引数に応じて変数に代入する文字列を変更
+case "${1}" in
 
-	# 真の場合は"cat"を代入
-	command="cat -"
+	# 引数がない場合
+	"" ) command="cat - " ; arg1="status" ;;
 
-	# "status"を代入
-	arg1="status"
+	# 引数が"status","listall","play","lsplaylist","lsplaylists"の場合
+	"status" | "listall" | "play" | "lsplaylist" | "lsplaylists" ) command="cat - " ; arg1="${1}" ;;
 
-# 偽の場合は引数が"listall","status","play","lsplaylists"の"lsplaylist"のいずれかであれば真,そうでない場合は偽
-elif [ "${1}" = "listall" ] || [ "${1}" = "status" ] || [ "${1}" = "play" ] || [ "${1}" = "lsplaylists" ] || [ "${1}" = "lsplaylist" ] ; then 
+	# 引数が"toggle"の場合
+	"toggle" ) command="cat - " ; arg1="pause" ;;
 
-	# 真の場合は"cat"を代入
-	command="cat -"
+	# 引数が"playlist"の場合
+	"playlist" ) command="cut -d: -f2-" ; arg1="${1}" ;;
 
-	# 1番目の引数を代入
-	arg1="${1}"
+	# 上記のどれにも一致しない場合
+	* ) command="cat - " ; arg1="status" ;;
 
-# 偽の場合は引数が"toggle"であれば真,そうでない場合は偽
-elif [ "${1}" = "toggle" ] ; then
-
-	# 真の場合は"cat"を代入
-	command="cat -"
-
-	# pauseを代入
-	arg1="pause"
-
-# 偽の場合は引数が"playlist"であれば真,そうでない場合は偽
-elif [ "${1}" = "playlist" ] ; then
-
-	# 真の場合は"cut"を代入
-	command="cut -d: -f2-"
-
-	# 1番目の引数を代入
-	arg1="${1}"
-
-else
-
-	# 偽の場合は"cat"を代入
-	command="cat -"
-
-	# "status"を代入
-	arg1="status"
-
-fi
+esac
 
 # 2番目の引数があれば真,無ければ偽
 if [ -n "${2}" ] ; then 
