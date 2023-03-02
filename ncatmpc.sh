@@ -1,68 +1,87 @@
 #!/bin/sh
 
 # ======変数の設定======
-
 export LANG=C
 
 # ホスト名とポート番号の環境変数があるかを確認,無ければ"localhost","6600"を代入
 test -n "${MPD_HOST}" || export MPD_HOST="localhost"
 test -n "${MPD_PORT}" || export MPD_PORT="6600"
 
+# パイプを素通りする"cat"を代入
+command="cat - " ;
+
+# 改行で挟んだ"close"を代入
+arg2="\nclose\n"
+
 # 条件分岐,1番目の引数に応じて変数に代入する文字列を変更
 case "${1}" in
 
 	# 引数がない場合
 	"" ) 
-		
-		command="cat - " ; arg1="status"
+
+		# "status"を代入
+		arg1="status"
 
 	;;
 
-	# "status","listall","play"の場合
-	"status" | "listall" | "play" ) 
+	# "status","listall"の場合
+	"status" | "listall" ) 
 
-		command="cat - " ; arg1="${1}"
+		# 1番目の引数を代入
+		arg1="${1}"
 
 	;;
 	
 	# "lsplaylist","lsplaylists"の場合
 	"lsplaylist" | "lsplaylists" )
 
-		command="cat - " ; arg1="listplaylists"
+		# arg1に"listplaylists"を代入
+		arg1="listplaylists"
 
 	;;	
+
+	# "play","pause","volume"の場合
+	"play" | "pause" | "volume" )
+
+		# 1番目の引数を代入
+		arg1="${1}"
+		
+		# 2番目の引数と改行で挟んだ"status"と"close"を出力
+		arg2="${2}\nstatus\nclose\n"
+
+	;;
 
 	# "toggle"の場合
 	"toggle" )
 
-		command="cat - " ; arg1="pause"
+		# arg1に"pause"を代入
+		arg1="pause"
+
+		# 改行で挟んだ"status"と"close"を出力
+		arg2="\nstatus\nclose\n"
 
 	;;
 
 	# "playlist"の場合
-	"playlist" ) command="cut -d: -f2-" ; arg1="${1}" ;;
+	"playlist" )
+
+		# 区切り文字に":",2フィールド目以降を出力
+		command="cut -d: -f2-" 
+
+		# 1番目の引数を代入
+		arg1="${1}"
+	
+	;;
 
 	# 上記のどれにも一致しない場合
 	* ) 
 
-		command="cat - " ; arg1="status"
+		# arg1に"status"を代入
+		arg1="status"
 
 	;;
 
 esac
-
-# 2番目の引数があれば真,無ければ偽
-if [ -n "${2}" ] ; then 
-	
-	# 真の場合は2番目の引数と"status",改行で挟んだ"close"を代入
-	arg2="${2}\nstatus\nclose\n"
-
-else
-	
-	# 偽の場合は改行で挟んだ"close"を代入
-	arg2="\nclose\n"
-
-fi
 
 # ======変数の設定の終了======
 
