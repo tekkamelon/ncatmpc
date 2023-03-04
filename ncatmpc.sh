@@ -16,16 +16,16 @@ arg2="\nclose\n"
 # 条件分岐,1番目の引数に応じて変数に代入する文字列を変更
 case "${1}" in
 
-	# 引数がない場合
-	"" ) 
+	# 引数がない,"status"の場合
+	"" | "status" ) 
 
 		# "status"を代入
 		arg1="status"
 
 	;;
 
-	# "status","listall"の場合
-	"status" | "listall" ) 
+	# "listall"の場合
+	"listall" ) 
 
 		# 1番目の引数を代入
 		arg1="${1}"
@@ -40,8 +40,8 @@ case "${1}" in
 
 	;;	
 
-	# "play","pause","volume"の場合
-	"play" | "pause" | "volume" )
+	# "play","pause","volume","add"の場合
+	"play" | "pause" | "volume" | "add" )
 
 		# 1番目の引数を代入
 		arg1="${1}"
