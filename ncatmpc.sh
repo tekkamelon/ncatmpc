@@ -8,10 +8,13 @@ test -n "${MPD_HOST}" || export MPD_HOST="localhost"
 test -n "${MPD_PORT}" || export MPD_PORT="6600"
 
 # パイプを素通りする"cat"を代入
-command="cat - " ;
+command="cat - "
+
+# 1番目の引数を代入
+arg1="${1}"
 
 # 改行で挟んだ"close"を代入
-arg2="\nclose\n"
+arg2="close"
 
 # 条件分岐,1番目の引数に応じて変数に代入する文字列を変更
 case "${1}" in
@@ -27,8 +30,8 @@ case "${1}" in
 	# "listall"の場合
 	"listall" ) 
 
-		# 1番目の引数を代入
-		arg1="${1}"
+		# 何もしない
+		:
 
 	;;
 	
@@ -43,9 +46,6 @@ case "${1}" in
 	# "play","pause","volume","add"の場合
 	"play" | "pause" | "volume" | "add" )
 
-		# 1番目の引数を代入
-		arg1="${1}"
-		
 		# 2番目の引数と改行で挟んだ"status"と"close"を出力
 		arg2="${2}\nstatus\nclose\n"
 
@@ -67,9 +67,6 @@ case "${1}" in
 
 		# 区切り文字に":",2フィールド目以降を出力
 		command="cut -d: -f2-" 
-
-		# 1番目の引数を代入
-		arg1="${1}"
 	
 	;;
 
@@ -86,10 +83,12 @@ esac
 # ======変数の設定の終了======
 
 # 引数を出力
-printf "${arg1} ${arg2}" |
+cat << EOS |
+${arg1} ${arg2}
+EOS
 
-# ncに文字列を渡す
-nc "${MPD_HOST}" "${MPD_PORT}" |
+# ncに文字列を渡す,1秒経過でタイムアウト
+nc -w 1 "${MPD_HOST}" "${MPD_PORT}" |
 
 # 行頭に"OK","Last-Modified","directory: "を含む行を除外
 grep -v -e "^OK" -e "^Last-Modified" -e "^directory: " |
@@ -97,6 +96,6 @@ grep -v -e "^OK" -e "^Last-Modified" -e "^directory: " |
 # "command"を実行
 ${command} |
 
-# "file: "を削除
+# 行頭の"file: ","playlist: "を削除
 sed -e "s/^file: //" -e "s/^playlist: //"
 
