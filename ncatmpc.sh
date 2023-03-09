@@ -14,7 +14,7 @@ command="cat - "
 arg1="${1}"
 
 # 改行で挟んだ"close"を代入
-arg2="close"
+arg2="\nclose\n"
 
 # 条件分岐,1番目の引数に応じて変数に代入する文字列を変更
 case "${1}" in
@@ -27,8 +27,8 @@ case "${1}" in
 
 	;;
 
-	# "listall"の場合
-	"listall" ) 
+	# "listall"."stats"の場合
+	"listall" | "stats" ) 
 
 		# 何もしない
 		:
@@ -82,7 +82,7 @@ esac
 
 # ======変数の設定の終了======
 
-# 引数を出力
+# 変数に代入された引数を出力
 cat << EOS |
 ${arg1} ${arg2}
 EOS
@@ -93,7 +93,7 @@ nc -w 1 "${MPD_HOST}" "${MPD_PORT}" |
 # 行頭に"OK","Last-Modified","directory: "を含む行を除外
 grep -v -e "^OK" -e "^Last-Modified" -e "^directory: " |
 
-# "command"を実行
+# "cat"か"cut"を実行
 ${command} |
 
 # 行頭の"file: ","playlist: "を削除
